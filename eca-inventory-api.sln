@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "eca-inventory-api", "eca-inventory-api.csproj", "{3CBAEFCF-E8D2-0182-6637-A6D1560190F3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3CBAEFCF-E8D2-0182-6637-A6D1560190F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CBAEFCF-E8D2-0182-6637-A6D1560190F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CBAEFCF-E8D2-0182-6637-A6D1560190F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CBAEFCF-E8D2-0182-6637-A6D1560190F3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AD81392F-0AFC-40CF-B8BE-9DB0C9FDB78E}
+	EndGlobalSection
+EndGlobal
