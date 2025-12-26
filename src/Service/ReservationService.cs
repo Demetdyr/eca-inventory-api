@@ -1,94 +1,61 @@
+using EcaIncentoryApi.Contract;
 using EcaIncentoryApi.Service;
-using EcaInventoryApi.Contracts;
 using EcaInventoryApi.Data;
 using EcaInventoryApi.Model;
-using EcaInventoryApi.Publisher;
 using EcaInventoryApi.Repository;
 using EcaInventoryApi.Repository.Entity;
+using EcaOrderApi.Contract;
+using EcaOrderApi.Messaging;
 
 namespace EcaInventoryApi.Service
 {
     public class ReservationService : IReservationService
     {
-        private readonly IStockItemRepository _stockItemRepository;
-        private readonly IRabbitMqPublisher _publisher;
-        private readonly ApplicationDbContext _context;
-        private readonly IReservationRepository _reservationRepository;
+		private readonly IStockItemRepository _stockItemRepository;
+		private readonly ApplicationDbContext _context;
+		private readonly IReservationRepository _reservationRepository;
+		private readonly ILogger<ReservationService> _logger;
+		private readonly IMessagePublisher _messagePublisher;
 
-        public ReservationService(IStockItemRepository stockItemRepository, IRabbitMqPublisher publisher, ApplicationDbContext context, IReservationRepository reservationRepository)
-        {
-            _stockItemRepository = stockItemRepository;
-            _publisher = publisher;
-            _context = context;
-            _reservationRepository = reservationRepository;
-        }
+		public ReservationService(IStockItemRepository stockItemRepository, ApplicationDbContext context, IReservationRepository reservationRepository, ILogger<ReservationService> logger, IMessagePublisher messagePublisher)
+		{
+			_stockItemRepository = stockItemRepository;
+			_context = context;
+			_reservationRepository = reservationRepository;
+			_logger = logger;
+			_messagePublisher = messagePublisher;
+		}
 
-        public async Task CreateReservation(OrderCreatedEvent message)
-        {
-            try
-            {
-                using var transaction = await _context.Database.BeginTransactionAsync();
+		public async Task CreateReservation(OrderCreatedEvent message)
+		{
 
-                var stockItems = await _stockItemRepository.GetAllByProductSkuAsync(
-                    message.Items.Select(i => i.Sku).ToList()
-                );
-                var list = new List<Repository.Entity.ReservationEntity>();
-
-                foreach (var item in message.Items)
-                {
-                    var stock = stockItems.First(x => x.ProductSku == item.Sku);
-
-                    if (stock.Quantity - stock.ReservedQuantity < item.Quantity)
-                    {
-                        await transaction.RollbackAsync();
-
-                        var rejected = new StockRejectedEvent
-                        {
-                            OrderId = message.OrderId,
-                            Items = message.Items,
-                            Reason = $"Not enough stock for SKU {item.Sku}"
-                        };
-
-                        await _publisher.PublishAsync(rejected, "stock.rejected");
-                        return;
-                    }
-
-                    stock.ReservedQuantity += item.Quantity;
-                    var reservationEntity = new ReservationEntity
-                    {
-                        OrderId = message.OrderId,
-                        ProductSku = item.Sku,
-                        Quantity = item.Quantity,
-                        Status = ReservationStatus.Confirmed,
-                        ExpiresAt = DateTime.UtcNow.AddMinutes(30),
-                    };
-                    list.Add(reservationEntity);
-                }
-
-                await _reservationRepository.AddReservation(list);
-
-                await transaction.CommitAsync();
-            }
-            catch (Exception ex)
-            {
-                var rejected = new StockRejectedEvent
-                {
-                    OrderId = message.OrderId,
-                    Items = message.Items,
-                    Reason = ex.Message
-                };
-                System.Console.WriteLine($"Reservation failed: {ex.Message}");
-                await _publisher.PublishAsync(rejected, "stock.rejected");
-                return;
-            }
-
-            var reserved = new StockReservedEvent
-            {
-                OrderId = message.OrderId,
-                Items = message.Items
-            };
-
-            await _publisher.PublishAsync(reserved, "stock.reserved");
-        }
+			if (message.Items.Count == 1)
+			{
+				var reservationMessage = new OrderStockReservedEvent
+				{
+					OrderId = message.OrderId,
+					Items = message.Items.Select(i => new OrderStockReservedEventItem
+					{
+						ProductSku = i.ProductSku!,
+						Quantity = i.Quantity
+					}).ToList()
+				};
+				await _messagePublisher.PublishAsync("inventory.order.stock.reserved", reservationMessage);
+			}
+			else
+			{
+				var reservationMessage = new OrderStockRejectedEvent
+				{
+					OrderId = message.OrderId,
+					Reason = "Stock not available",
+					Items = message.Items.Select(i => new OrderStockRejectedEventItem
+					{
+						ProductSku = i.ProductSku!,
+						Quantity = i.Quantity
+					}).ToList()
+				};
+				await _messagePublisher.PublishAsync("inventory.order.stock.rejected", reservationMessage);
+			}
+		}
     }
 }

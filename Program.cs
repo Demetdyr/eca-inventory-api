@@ -2,15 +2,15 @@ using System.Reflection;
 using System.Security.Claims;
 using DbUp;
 using DotNetEnv;
+using EcaIncentoryApi.Consumer;
+using EcaIncentoryApi.Contract;
 using EcaIncentoryApi.Service;
-using EcaInventoryApi.Config;
-using EcaInventoryApi.Consumer;
 using EcaInventoryApi.Data;
 using EcaInventoryApi.Middleware;
 using EcaInventoryApi.Model;
-using EcaInventoryApi.Publisher;
 using EcaInventoryApi.Repository;
 using EcaInventoryApi.Service;
+using EcaOrderApi.Config;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -40,17 +40,9 @@ var inventoryClientSecret = Environment.GetEnvironmentVariable("INVENTORY_CLIENT
                        ?? throw new Exception("INVENTORY_CLIENT_SECRET not set in .env");
 
 builder.Configuration.AddEnvironmentVariables();
-builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMq"));
 
-builder.Services.AddSingleton<IConnection>(sp =>
-{
-	var opts = sp.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
-
-	return RabbitMqConnectionFactory
-		.CreateConnectionAsync(opts)
-		.GetAwaiter()
-		.GetResult(); 
-});
+builder.Services.AddRabbitMq(builder.Configuration);
+builder.Services.AddRabbitMqConsumer<OrderCreatedEvent, OrderCreatedHandler>("order.reserve.stock");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -96,12 +88,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseNpgsql
     o => o.MapEnum<ReservationStatus>("reservation_status")));
 
 builder.Services.AddScoped<IStockItemRepository, StockItemRepository>();
-builder.Services.AddScoped<IRabbitMqPublisher, RabbitMqPublisher>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
-
-builder.Services.AddHostedService<OrderCreatedConsumer>();
-
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -206,4 +194,3 @@ static void EnsureDatabaseMigration(string connectionString)
     Console.WriteLine("Database migrations applied successfully.");
     Console.ResetColor();
 }
-
