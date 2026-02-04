@@ -10,7 +10,7 @@ namespace EcaInventoryApi.Repository.Entity
         [Key]
         public int Id { get; set; }
         [Required]
-        public string ProductSku { get; set; }
+        public required string ProductSku { get; set; }
 
         [Required]
         public int Quantity { get; set; }

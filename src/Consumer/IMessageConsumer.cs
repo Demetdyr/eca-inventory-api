@@ -1,4 +1,4 @@
-namespace EcaIncentoryApi.Consumer
+namespace EcaInventoryApi.Consumer
 {
 	public interface IMessageConsumer<T> where T : class
 	{

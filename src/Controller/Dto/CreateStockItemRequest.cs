@@ -5,7 +5,7 @@ namespace EcaInventoryApi.Controller.Dto
     public class CreateStockItemRequest
     {
         [Required]
-        public string ProductSku { get; set; } 
+        public required string ProductSku { get; set; } 
 
         [Required]
         public int Quantity { get; set; }

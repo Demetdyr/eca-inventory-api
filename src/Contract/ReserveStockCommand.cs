@@ -1,12 +1,12 @@
 namespace EcaInventoryApi.Contract
 {
-	public class OrderCreatedEvent
+	public class ReserveStockCommand
 	{
 		public int OrderId { get; set; }
-		public required List<OrderCreatedEventItem> Items { get; set; }
+		public required List<ReserveStockCommandItem> Items { get; set; }
 	}
 
-	public class OrderCreatedEventItem
+	public class ReserveStockCommandItem
 	{
 		public required string ProductSku { get; set; }
 		public required int Quantity { get; set; }

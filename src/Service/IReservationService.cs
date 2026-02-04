@@ -1,11 +1,12 @@
-using EcaIncentoryApi.Contract;
+using EcaInventoryApi.Contract;
 using EcaInventoryApi.Model;
 using EcaInventoryApi.Repository.Entity;
 
-namespace EcaIncentoryApi.Service
+namespace EcaInventoryApi.Service
 {
     public interface IReservationService
     {
-		Task CreateReservation(OrderCreatedEvent message);
+		Task CreateReservation(ReserveStockCommand message);
+		Task ConfirmReservation(int orderId, CancellationToken cancellationToken = default);
     }
 }

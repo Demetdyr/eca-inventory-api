@@ -2,14 +2,13 @@ using System.Reflection;
 using System.Security.Claims;
 using DbUp;
 using DotNetEnv;
-using EcaIncentoryApi.Consumer;
-using EcaIncentoryApi.Contract;
-using EcaIncentoryApi.Service;
+using EcaInventoryApi.Consumer;
+using EcaInventoryApi.Contract;
+using EcaInventoryApi.Service;
 using EcaInventoryApi.Data;
 using EcaInventoryApi.Middleware;
 using EcaInventoryApi.Model;
 using EcaInventoryApi.Repository;
-using EcaInventoryApi.Service;
 using EcaOrderApi.Config;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +16,10 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RabbitMQ.Client;
+using System.Globalization;
+
+CultureInfo.DefaultThreadCurrentCulture = CultureInfo.InvariantCulture;
+CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.InvariantCulture;
 
 Env.Load();
 
@@ -42,7 +45,8 @@ var inventoryClientSecret = Environment.GetEnvironmentVariable("INVENTORY_CLIENT
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddRabbitMq(builder.Configuration);
-builder.Services.AddRabbitMqConsumer<OrderCreatedEvent, OrderCreatedHandler>("order.reserve.stock");
+builder.Services.AddRabbitMqConsumer<ReserveStockCommand, ReserveStockHandler>("order.reserve.stock");
+builder.Services.AddRabbitMqConsumer<OrderConfirmedEvent, OrderConfirmedHandler>("order.confirmed");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

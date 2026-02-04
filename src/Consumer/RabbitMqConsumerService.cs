@@ -3,7 +3,7 @@ using EcaOrderApi.Messaging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace EcaIncentoryApi.Consumer
+namespace EcaInventoryApi.Consumer
 {
 	public class RabbitMqConsumerService<TMessage, THandler> : BackgroundService
 		where TMessage : class

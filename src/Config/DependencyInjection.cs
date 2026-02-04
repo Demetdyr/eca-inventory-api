@@ -1,4 +1,4 @@
-using EcaIncentoryApi.Consumer;
+using EcaInventoryApi.Consumer;
 using EcaOrderApi.Messaging;
 
 namespace EcaOrderApi.Config

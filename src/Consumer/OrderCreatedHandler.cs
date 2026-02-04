@@ -1,26 +1,26 @@
-using EcaIncentoryApi.Contract;
-using EcaIncentoryApi.Service;
+using EcaInventoryApi.Contract;
+using EcaInventoryApi.Service;
 
-namespace EcaIncentoryApi.Consumer
+namespace EcaInventoryApi.Consumer
 {
 	public class OrderCreatedHandler : IMessageConsumer<OrderCreatedEvent>
 	{
 		private readonly ILogger<OrderCreatedHandler> _logger;
-		private readonly IReservationService _reservationService;
 
-		public OrderCreatedHandler(ILogger<OrderCreatedHandler> logger, IReservationService reservationService)
+		public OrderCreatedHandler(ILogger<OrderCreatedHandler> logger)
 		{
 			_logger = logger;
-			_reservationService = reservationService;
 		}
 
 		public async Task HandleAsync(OrderCreatedEvent message, CancellationToken cancellationToken = default)
 		{
 			_logger.LogInformation("Processing OrderCreatedEvent for OrderId: {OrderId}", message.OrderId);
 
-			await _reservationService.CreateReservation(message);
+			// Handle order created event logic here
 
 			_logger.LogInformation("Successfully processed OrderCreatedEvent for OrderId: {OrderId}", message.OrderId);
+
+			await Task.CompletedTask;
 		}
 	}
 }
